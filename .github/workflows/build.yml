@@ -7,7 +7,7 @@ on:
   workflow_dispatch: {}
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -32,3 +32,23 @@ jobs:
           name: TrimSMP-jar
           path: target/TrimSMP-*.jar
           if-no-files-found: error
+
+      - name: Publish jar to dist branch
+        run: |
+          set -e
+          JAR=$(ls target/TrimSMP-*.jar | head -n1)
+          mkdir -p /tmp/dist
+          cp "$JAR" /tmp/dist/TrimSMP.jar
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin dist 2>/dev/null || true
+          if git rev-parse --verify origin/dist >/dev/null 2>&1; then
+            git checkout -B dist origin/dist
+          else
+            git checkout --orphan dist
+            git rm -rf . >/dev/null 2>&1 || true
+          fi
+          cp /tmp/dist/TrimSMP.jar ./TrimSMP.jar
+          git add TrimSMP.jar
+          git commit -m "Build TrimSMP.jar from ${GITHUB_SHA}" || echo "no changes to commit"
+          git push origin dist --force
