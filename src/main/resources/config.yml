@@ -1,0 +1,92 @@
+# TrimSMP configuration
+# A player's power activates only when all 4 armor pieces (helmet, chestplate,
+# leggings, boots) carry the SAME trim pattern. The trim MATERIAL of the
+# weakest piece in the set decides the power's tier (1-5, see tiers below).
+#
+# Tiers: 1=Common (iron/copper/quartz)  2=Uncommon (gold/redstone/lapis)
+#        3=Rare (amethyst/emerald)      4=Epic (diamond)   5=Legendary (netherite)
+#
+# Many numeric values below scale automatically with tier inside the code
+# (base + tier * step); the numbers here are the tunable base/step inputs.
+
+general:
+  # Seconds between passive ability ticks (potion effects, auras, scans).
+  tick-interval-seconds: 1
+  # Broadcast an action-bar hint the first time a player completes a matching set.
+  announce-activation: true
+  activation-message: '&d&lTRIM SET ACTIVE &7- &f%pattern% &7(tier %tier%)'
+
+abilities:
+  sentry:
+    enabled: true
+    radius-base: 10.0
+    radius-per-tier: 2.0
+    glow-seconds: 4
+    overwatch-resistance-seconds: 3
+  vex:
+    enabled: true
+    distance-base: 6.0
+    distance-per-tier: 2.0
+    cooldown-seconds-base: 20
+    cooldown-seconds-reduction-per-tier: 3
+  wild:
+    enabled: true
+    regen-amplifier-per-tier: 1
+    sprint-speed-seconds: 3
+  coast:
+    enabled: true
+    grace-amplifier-per-tier: 1
+  dune:
+    enabled: true
+    haste-amplifier-per-tier: 1
+  ward:
+    enabled: true
+    damage-reduction-base-percent: 10
+    damage-reduction-per-tier-percent: 6
+    cooldown-seconds-base: 25
+    cooldown-seconds-reduction-per-tier: 4
+  eye:
+    enabled: true
+    night-vision: true
+  tide:
+    enabled: true
+    haste-amplifier: 1
+  snout:
+    enabled: true
+  rib:
+    enabled: true
+    undead-damage-bonus-base-percent: 10
+    undead-damage-bonus-per-tier-percent: 6
+  spire:
+    enabled: true
+    trigger-fall-distance: 3.0
+    negate-at-tier: 4
+  wayfinder:
+    enabled: true
+    speed-seconds: 4
+  shaper:
+    enabled: true
+    haste-amplifier-per-tier: 1
+  silence:
+    enabled: true
+    unnotice-chance-base-percent: 15
+    unnotice-chance-per-tier-percent: 10
+  raiser:
+    enabled: true
+    radius-base: 8.0
+    radius-per-tier: 1.5
+    buff-seconds: 5
+  host:
+    enabled: true
+    radius: 8.0
+    regen-seconds: 4
+  flow:
+    enabled: true
+    launch-power-base: 1.2
+    launch-power-per-tier: 0.25
+    cooldown-seconds-base: 18
+    cooldown-seconds-reduction-per-tier: 2
+  bolt:
+    enabled: true
+    crit-bonus-damage-base: 1.0
+    crit-bonus-damage-per-tier: 0.75

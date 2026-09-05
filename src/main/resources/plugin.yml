@@ -1,0 +1,21 @@
+name: TrimSMP
+version: '${project.version}'
+main: com.trimsmp.TrimSmpPlugin
+api-version: '1.21'
+author: trimsmp
+description: 'Armor trims grant themed special abilities and powers, scaled by trim material.'
+
+commands:
+  trimsmp:
+    description: Manage and inspect the TrimSMP plugin.
+    usage: /trimsmp <reload|info|list>
+    aliases: [trims, trimpower]
+    permission: trimsmp.command
+
+permissions:
+  trimsmp.command:
+    description: Allows use of the base /trimsmp command (info, list).
+    default: true
+  trimsmp.admin:
+    description: Allows reloading the plugin configuration.
+    default: op
