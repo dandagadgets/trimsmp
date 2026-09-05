@@ -4,20 +4,33 @@ import com.trimsmp.ability.TrimAbility;
 import com.trimsmp.trim.TrimPatternKind;
 import com.trimsmp.trim.TrimTier;
 import com.trimsmp.util.AbilityConfig;
+import com.trimsmp.util.CooldownManager;
 import com.trimsmp.util.Effects;
-import org.bukkit.Material;
+import com.trimsmp.util.Targets;
+import org.bukkit.FluidCollisionMode;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.Vector;
 
-/** Wild: draws vigor from natural ground, with a burst of speed while sprinting through it. */
+import java.util.function.LongSupplier;
+
+/** Wild: a grapple hook that pulls you to blocks or enemies (poisoning them); roots trap enemies when you're hurt badly. */
 public final class WildAbility implements TrimAbility {
 
     private final AbilityConfig config;
-    private final int passiveDurationTicks;
+    private final LongSupplier currentTick;
+    private final Plugin plugin;
+    private final CooldownManager rootTrapCooldown = new CooldownManager();
 
-    public WildAbility(AbilityConfig config, int passiveDurationTicks) {
+    public WildAbility(AbilityConfig config, LongSupplier currentTick, Plugin plugin) {
         this.config = config;
-        this.passiveDurationTicks = passiveDurationTicks;
+        this.currentTick = currentTick;
+        this.plugin = plugin;
     }
 
     @Override
@@ -27,27 +40,75 @@ public final class WildAbility implements TrimAbility {
 
     @Override
     public void tick(Player player, TrimTier tier) {
-        Material below = player.getLocation().subtract(0, 1, 0).getBlock().getType();
-        if (!isNatural(below)) {
+        Effects.refresh(player, PotionEffectType.REGENERATION, (tier.level() - 1) / 2, 30);
+    }
+
+    @Override
+    public boolean hasActivePower() {
+        return true;
+    }
+
+    @Override
+    public long activationCooldownTicks(TrimTier tier) {
+        int base = config.getInt("cooldown-seconds-base", 20);
+        int reductionPerTier = config.getInt("cooldown-seconds-reduction-per-tier", 2);
+        return Math.max(3, base - reductionPerTier * (tier.level() - 1)) * 20L;
+    }
+
+    @Override
+    public void activate(Player player, TrimTier tier) {
+        double maxRange = config.getDouble("grapple-range", 60.0);
+        double speed = config.getDouble("grapple-speed", 1.8);
+        int poisonTicks = config.getInt("poison-duration-seconds", 10) * 20;
+
+        Vector direction = player.getEyeLocation().getDirection();
+        RayTraceResult result = player.getWorld().rayTrace(player.getEyeLocation(), direction, maxRange,
+                FluidCollisionMode.NEVER, true, 0.3, entity -> !entity.equals(player));
+
+        Vector targetPoint = (result != null)
+                ? result.getHitPosition()
+                : player.getEyeLocation().toVector().add(direction.clone().multiply(maxRange));
+
+        if (result != null && result.getHitEntity() instanceof LivingEntity target) {
+            Effects.refresh(target, PotionEffectType.POISON, 0, poisonTicks);
+        }
+
+        new BukkitRunnable() {
+            int ticksRun = 0;
+
+            @Override
+            public void run() {
+                if (!player.isOnline() || ticksRun++ > 20) {
+                    cancel();
+                    return;
+                }
+                Vector toTarget = targetPoint.clone().subtract(player.getLocation().toVector());
+                if (toTarget.lengthSquared() < 4.0) {
+                    cancel();
+                    return;
+                }
+                player.setVelocity(toTarget.normalize().multiply(speed));
+            }
+        }.runTaskTimer(plugin, 0L, 1L);
+    }
+
+    @Override
+    public void onIncomingDamage(Player player, TrimTier tier, EntityDamageEvent event) {
+        double threshold = config.getDouble("root-trigger-health", 8.0);
+        if (player.getHealth() - event.getFinalDamage() > threshold) {
+            return;
+        }
+        long cooldownTicks = config.getInt("root-cooldown-seconds", 20) * 20L;
+        if (!rootTrapCooldown.tryUse(player, "root_trap", currentTick.getAsLong(), cooldownTicks)) {
             return;
         }
 
-        int regenAmplifier = config.getInt("regen-amplifier-per-tier", 1) * tier.level() - 1;
-        Effects.refresh(player, PotionEffectType.REGENERATION, regenAmplifier, passiveDurationTicks);
+        double radiusXZ = config.getDouble("root-radius-xz", 5.0);
+        double radiusY = config.getDouble("root-radius-y", 3.0);
+        int rootTicks = config.getInt("root-duration-seconds", 10) * 20;
 
-        if (player.isSprinting()) {
-            int sprintTicks = config.getInt("sprint-speed-seconds", 3) * 20;
-            Effects.refresh(player, PotionEffectType.SPEED, tier.level() - 1, Math.max(passiveDurationTicks, sprintTicks));
+        for (LivingEntity nearby : Targets.nearbyLiving(player, radiusXZ, radiusY)) {
+            Effects.refresh(nearby, PotionEffectType.SLOWNESS, 9, rootTicks);
         }
-    }
-
-    private static boolean isNatural(Material material) {
-        return switch (material) {
-            case GRASS_BLOCK, DIRT, COARSE_DIRT, ROOTED_DIRT, PODZOL, MYCELIUM, MOSS_BLOCK,
-                 JUNGLE_LEAVES, OAK_LEAVES, DARK_OAK_LEAVES, BIRCH_LEAVES, SPRUCE_LEAVES,
-                 ACACIA_LEAVES, CHERRY_LEAVES, MANGROVE_LEAVES, AZALEA_LEAVES,
-                 FLOWERING_AZALEA_LEAVES -> true;
-            default -> false;
-        };
     }
 }

@@ -5,17 +5,23 @@ import com.trimsmp.trim.TrimPatternKind;
 import com.trimsmp.trim.TrimTier;
 import com.trimsmp.util.AbilityConfig;
 import com.trimsmp.util.Effects;
-import org.bukkit.entity.Entity;
+import com.trimsmp.util.PearlDisableService;
+import com.trimsmp.util.Targets;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 
-/** Raiser: rallies nearby allies, lending them strength and speed in a fight. */
+/** Raiser: negates fall damage, and slams the ground on demand to pull in and weaken every nearby enemy. */
 public final class RaiserAbility implements TrimAbility {
 
     private final AbilityConfig config;
+    private final PearlDisableService pearlDisable;
 
-    public RaiserAbility(AbilityConfig config) {
+    public RaiserAbility(AbilityConfig config, PearlDisableService pearlDisable) {
         this.config = config;
+        this.pearlDisable = pearlDisable;
     }
 
     @Override
@@ -24,17 +30,41 @@ public final class RaiserAbility implements TrimAbility {
     }
 
     @Override
-    public void tick(Player player, TrimTier tier) {
-        double radius = config.getDouble("radius-base", 8.0) + config.getDouble("radius-per-tier", 1.5) * tier.level();
-        int buffTicks = config.getInt("buff-seconds", 5) * 20;
-        int amplifier = (tier.level() - 1) / 2;
+    public void onIncomingDamage(Player player, TrimTier tier, EntityDamageEvent event) {
+        if (event.getCause() == EntityDamageEvent.DamageCause.FALL) {
+            event.setDamage(0);
+        }
+    }
 
-        Effects.refresh(player, PotionEffectType.STRENGTH, Math.max(0, amplifier - 1), buffTicks);
+    @Override
+    public boolean hasActivePower() {
+        return true;
+    }
 
-        for (Entity nearby : player.getNearbyEntities(radius, radius, radius)) {
-            if (nearby instanceof Player ally && !ally.equals(player)) {
-                Effects.refresh(ally, PotionEffectType.STRENGTH, amplifier, buffTicks);
-                Effects.refresh(ally, PotionEffectType.SPEED, amplifier, buffTicks);
+    @Override
+    public long activationCooldownTicks(TrimTier tier) {
+        int base = config.getInt("cooldown-seconds-base", 120);
+        int reductionPerTier = config.getInt("cooldown-seconds-reduction-per-tier", 12);
+        return Math.max(10, base - reductionPerTier * (tier.level() - 1)) * 20L;
+    }
+
+    @Override
+    public void activate(Player player, TrimTier tier) {
+        double radius = config.getDouble("entity-pull-radius", 15.0);
+        int debuffTicks = config.getInt("debuff-duration-seconds", 4) * 20;
+        long pearlDisableTicks = config.getInt("pearl-cooldown-seconds", 10) * 20L;
+
+        for (LivingEntity nearby : Targets.nearbyLiving(player, radius, radius)) {
+            Vector pull = player.getLocation().toVector().subtract(nearby.getLocation().toVector());
+            if (pull.lengthSquared() > 0.01) {
+                pull.normalize().multiply(1.2);
+                pull.setY(Math.max(0.3, pull.getY()));
+                nearby.setVelocity(nearby.getVelocity().add(pull));
+            }
+            Effects.refresh(nearby, PotionEffectType.SLOWNESS, 1, debuffTicks);
+            Effects.refresh(nearby, PotionEffectType.WEAKNESS, 1, debuffTicks);
+            if (nearby instanceof Player enemy) {
+                pearlDisable.disable(enemy, pearlDisableTicks);
             }
         }
     }

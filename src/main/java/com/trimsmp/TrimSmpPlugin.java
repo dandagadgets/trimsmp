@@ -3,12 +3,16 @@ package com.trimsmp;
 import com.trimsmp.ability.AbilityRegistry;
 import com.trimsmp.command.TrimSmpCommand;
 import com.trimsmp.listener.CombatListener;
+import com.trimsmp.listener.MinionListener;
+import com.trimsmp.listener.PearlDisableListener;
 import com.trimsmp.listener.PlayerCleanupListener;
 import com.trimsmp.listener.PowerActivationListener;
+import com.trimsmp.minion.MinionService;
 import com.trimsmp.trim.ActiveTrimSet;
 import com.trimsmp.trim.TrimSetService;
 import com.trimsmp.util.CooldownManager;
 import com.trimsmp.util.Msg;
+import com.trimsmp.util.PearlDisableService;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -19,17 +23,23 @@ public final class TrimSmpPlugin extends JavaPlugin {
     private TrimSetService trimSetService;
     private AbilityRegistry abilityRegistry;
     private CooldownManager activationCooldowns;
+    private MinionService minionService;
+    private PearlDisableService pearlDisableService;
     private int tickIntervalTicks;
     private long currentTick = 0L;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        this.minionService = new MinionService(this);
+        this.pearlDisableService = new PearlDisableService(this::currentTick);
         reloadPluginState();
 
         getServer().getPluginManager().registerEvents(new PlayerCleanupListener(this), this);
         getServer().getPluginManager().registerEvents(new CombatListener(this), this);
         getServer().getPluginManager().registerEvents(new PowerActivationListener(this), this);
+        getServer().getPluginManager().registerEvents(new MinionListener(minionService), this);
+        getServer().getPluginManager().registerEvents(new PearlDisableListener(pearlDisableService), this);
 
         TrimSmpCommand command = new TrimSmpCommand(this);
         getCommand("trimsmp").setExecutor(command);
@@ -44,7 +54,7 @@ public final class TrimSmpPlugin extends JavaPlugin {
         reloadConfig();
         int seconds = Math.max(1, getConfig().getInt("general.tick-interval-seconds", 1));
         this.tickIntervalTicks = seconds * 20;
-        this.abilityRegistry = new AbilityRegistry(this, getConfig(), tickIntervalTicks);
+        this.abilityRegistry = new AbilityRegistry(this, getConfig(), tickIntervalTicks, minionService, pearlDisableService);
         if (this.trimSetService == null) {
             this.trimSetService = new TrimSetService();
         }
@@ -59,6 +69,8 @@ public final class TrimSmpPlugin extends JavaPlugin {
     }
 
     private void tickAllPlayers() {
+        minionService.cleanupExpired(currentTick);
+
         boolean announce = getConfig().getBoolean("general.announce-activation", true);
         String template = getConfig().getString("general.activation-message",
                 "&d&lTRIM SET ACTIVE &7- &f%pattern% &7(tier %tier%)");

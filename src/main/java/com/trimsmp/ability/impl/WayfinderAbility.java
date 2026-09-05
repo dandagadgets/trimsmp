@@ -14,18 +14,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-/** Wayfinder: always knows the way home, and finds a rhythm on a long sprint. */
+/** Wayfinder: moves fast while sneaking; mark a location, then teleport back to it - any distance. */
 public final class WayfinderAbility implements TrimAbility {
 
-    private static final String[] COMPASS = {"N", "NE", "E", "SE", "S", "SW", "W", "NW"};
-
     private final AbilityConfig config;
-    private final int passiveDurationTicks;
-    private final Map<UUID, Long> sprintStartMillis = new HashMap<>();
+    private final Map<UUID, Location> waypoints = new HashMap<>();
 
-    public WayfinderAbility(AbilityConfig config, int passiveDurationTicks) {
+    public WayfinderAbility(AbilityConfig config) {
         this.config = config;
-        this.passiveDurationTicks = passiveDurationTicks;
     }
 
     @Override
@@ -35,36 +31,34 @@ public final class WayfinderAbility implements TrimAbility {
 
     @Override
     public void tick(Player player, TrimTier tier) {
-        Location home = player.getBedSpawnLocation();
-        Location target = (home != null && home.getWorld() == player.getWorld())
-                ? home
-                : player.getWorld().getSpawnLocation();
-
-        double dx = target.getX() - player.getX();
-        double dz = target.getZ() - player.getZ();
-        double distance = Math.sqrt(dx * dx + dz * dz);
-        String direction = bearing(dx, dz);
-        Msg.actionBar(player, "&d✦ &7" + direction + " &f" + Math.round(distance) + "m &7to home");
-
-        long now = System.currentTimeMillis();
-        UUID id = player.getUniqueId();
-        if (player.isSprinting()) {
-            long startedAt = sprintStartMillis.computeIfAbsent(id, k -> now);
-            int requiredSeconds = config.getInt("speed-seconds", 4);
-            if (now - startedAt >= requiredSeconds * 1000L) {
-                Effects.refresh(player, PotionEffectType.SPEED, tier.level() - 1, passiveDurationTicks);
-            }
-        } else {
-            sprintStartMillis.remove(id);
+        if (player.isSneaking()) {
+            Effects.refresh(player, PotionEffectType.SPEED, (tier.level() - 1) / 2, 30);
         }
     }
 
-    private static String bearing(double dx, double dz) {
-        double angle = Math.toDegrees(Math.atan2(dx, -dz));
-        if (angle < 0) {
-            angle += 360;
+    @Override
+    public boolean hasActivePower() {
+        return true;
+    }
+
+    @Override
+    public long activationCooldownTicks(TrimTier tier) {
+        int base = config.getInt("cooldown-seconds-base", 120);
+        int reductionPerTier = config.getInt("cooldown-seconds-reduction-per-tier", 12);
+        return Math.max(5, base - reductionPerTier * (tier.level() - 1)) * 20L;
+    }
+
+    @Override
+    public void activate(Player player, TrimTier tier) {
+        UUID id = player.getUniqueId();
+        Location marked = waypoints.get(id);
+        if (marked == null || marked.getWorld() == null) {
+            waypoints.put(id, player.getLocation().clone());
+            Msg.actionBar(player, "&b✦ Waypoint set.");
+        } else {
+            player.teleport(marked);
+            waypoints.remove(id);
+            Msg.actionBar(player, "&b✦ Teleported to waypoint.");
         }
-        int index = (int) Math.round(angle / 45.0) % 8;
-        return COMPASS[index];
     }
 }

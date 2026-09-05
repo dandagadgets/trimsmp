@@ -4,22 +4,17 @@ import com.trimsmp.ability.TrimAbility;
 import com.trimsmp.trim.TrimPatternKind;
 import com.trimsmp.trim.TrimTier;
 import com.trimsmp.util.AbilityConfig;
-import com.trimsmp.util.CooldownManager;
+import com.trimsmp.util.Effects;
 import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.potion.PotionEffectType;
 
-import java.util.function.LongSupplier;
-
-/** Ward: a lingering shield that softens the next blow, then needs a moment to recharge. */
+/** Ward: a personal barrier of Absorption, Resistance, and Fire Resistance on demand. */
 public final class WardAbility implements TrimAbility {
 
     private final AbilityConfig config;
-    private final LongSupplier currentTick;
-    private final CooldownManager cooldowns = new CooldownManager();
 
-    public WardAbility(AbilityConfig config, LongSupplier currentTick) {
+    public WardAbility(AbilityConfig config) {
         this.config = config;
-        this.currentTick = currentTick;
     }
 
     @Override
@@ -28,21 +23,30 @@ public final class WardAbility implements TrimAbility {
     }
 
     @Override
-    public void onIncomingDamage(Player player, TrimTier tier, EntityDamageEvent event) {
-        if (event.getDamage() <= 0) {
-            return;
-        }
-        int base = config.getInt("cooldown-seconds-base", 25);
-        int reductionPerTier = config.getInt("cooldown-seconds-reduction-per-tier", 4);
-        long cooldownTicks = Math.max(2, base - reductionPerTier * (tier.level() - 1)) * 20L;
+    public void tick(Player player, TrimTier tier) {
+        Effects.refresh(player, PotionEffectType.RESISTANCE, (tier.level() - 1) / 2, 30);
+    }
 
-        if (!cooldowns.tryUse(player, "ward", currentTick.getAsLong(), cooldownTicks)) {
-            return;
-        }
+    @Override
+    public boolean hasActivePower() {
+        return true;
+    }
 
-        double percent = config.getDouble("damage-reduction-base-percent", 10)
-                + config.getDouble("damage-reduction-per-tier-percent", 6) * tier.level();
-        double multiplier = Math.max(0.0, 1.0 - (percent / 100.0));
-        event.setDamage(event.getDamage() * multiplier);
+    @Override
+    public long activationCooldownTicks(TrimTier tier) {
+        int base = config.getInt("cooldown-seconds-base", 120);
+        int reductionPerTier = config.getInt("cooldown-seconds-reduction-per-tier", 12);
+        return Math.max(10, base - reductionPerTier * (tier.level() - 1)) * 20L;
+    }
+
+    @Override
+    public void activate(Player player, TrimTier tier) {
+        int barrierTicks = config.getInt("barrier-duration-seconds", 10) * 20;
+        int absorptionAmplifier = config.getInt("absorption-amplifier", 3) + (tier.level() - 1) / 2;
+        int resistanceAmplifier = config.getInt("resistance-amplifier", 1) + (tier.level() - 1) / 3;
+
+        Effects.refresh(player, PotionEffectType.ABSORPTION, absorptionAmplifier, barrierTicks);
+        Effects.refresh(player, PotionEffectType.RESISTANCE, resistanceAmplifier, barrierTicks);
+        Effects.refresh(player, PotionEffectType.FIRE_RESISTANCE, 0, barrierTicks);
     }
 }

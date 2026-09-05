@@ -1,25 +1,28 @@
 package com.trimsmp.ability.impl;
 
 import com.trimsmp.ability.TrimAbility;
+import com.trimsmp.minion.MinionService;
 import com.trimsmp.trim.TrimPatternKind;
 import com.trimsmp.trim.TrimTier;
 import com.trimsmp.util.AbilityConfig;
-import org.bukkit.entity.AbstractSkeleton;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Phantom;
+import com.trimsmp.util.Effects;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Wither;
-import org.bukkit.entity.Zombie;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.potion.PotionEffectType;
 
-/** Rib: strikes harder against the undead and shrugs off the wither's curse. */
+import java.util.function.LongSupplier;
+
+/** Rib: summons a few Bogged to fight at your side for a while. */
 public final class RibAbility implements TrimAbility {
 
     private final AbilityConfig config;
+    private final MinionService minions;
+    private final LongSupplier currentTick;
 
-    public RibAbility(AbilityConfig config) {
+    public RibAbility(AbilityConfig config, MinionService minions, LongSupplier currentTick) {
         this.config = config;
+        this.minions = minions;
+        this.currentTick = currentTick;
     }
 
     @Override
@@ -29,25 +32,25 @@ public final class RibAbility implements TrimAbility {
 
     @Override
     public void tick(Player player, TrimTier tier) {
-        if (player.hasPotionEffect(PotionEffectType.WITHER)) {
-            player.removePotionEffect(PotionEffectType.WITHER);
-        }
+        Effects.refresh(player, PotionEffectType.RESISTANCE, (tier.level() - 1) / 2, 30);
     }
 
     @Override
-    public void onDealDamage(Player player, TrimTier tier, EntityDamageByEntityEvent event) {
-        if (!isUndead(event.getEntity())) {
-            return;
-        }
-        double percent = config.getDouble("undead-damage-bonus-base-percent", 10)
-                + config.getDouble("undead-damage-bonus-per-tier-percent", 6) * tier.level();
-        event.setDamage(event.getDamage() * (1.0 + percent / 100.0));
+    public boolean hasActivePower() {
+        return true;
     }
 
-    private static boolean isUndead(Entity entity) {
-        return entity instanceof Zombie
-                || entity instanceof AbstractSkeleton
-                || entity instanceof Phantom
-                || entity instanceof Wither;
+    @Override
+    public long activationCooldownTicks(TrimTier tier) {
+        int base = config.getInt("cooldown-seconds-base", 60);
+        int reductionPerTier = config.getInt("cooldown-seconds-reduction-per-tier", 6);
+        return Math.max(5, base - reductionPerTier * (tier.level() - 1)) * 20L;
+    }
+
+    @Override
+    public void activate(Player player, TrimTier tier) {
+        int count = config.getInt("minion-count-base", 2) + (tier.level() - 1) / 2;
+        long lifespanTicks = config.getInt("minion-lifespan-seconds", 60) * 20L;
+        minions.spawn(player, EntityType.BOGGED, count, lifespanTicks, currentTick.getAsLong());
     }
 }

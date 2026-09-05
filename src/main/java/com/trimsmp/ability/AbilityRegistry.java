@@ -1,5 +1,6 @@
 package com.trimsmp.ability;
 
+import com.trimsmp.TrimSmpPlugin;
 import com.trimsmp.ability.impl.BoltAbility;
 import com.trimsmp.ability.impl.CoastAbility;
 import com.trimsmp.ability.impl.DuneAbility;
@@ -18,9 +19,10 @@ import com.trimsmp.ability.impl.VexAbility;
 import com.trimsmp.ability.impl.WardAbility;
 import com.trimsmp.ability.impl.WayfinderAbility;
 import com.trimsmp.ability.impl.WildAbility;
-import com.trimsmp.TrimSmpPlugin;
+import com.trimsmp.minion.MinionService;
 import com.trimsmp.trim.TrimPatternKind;
 import com.trimsmp.util.AbilityConfig;
+import com.trimsmp.util.PearlDisableService;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.EnumMap;
@@ -32,26 +34,27 @@ public final class AbilityRegistry {
 
     private final Map<TrimPatternKind, TrimAbility> abilities = new EnumMap<>(TrimPatternKind.class);
 
-    public AbilityRegistry(TrimSmpPlugin plugin, FileConfiguration config, int tickIntervalTicks) {
+    public AbilityRegistry(TrimSmpPlugin plugin, FileConfiguration config, int tickIntervalTicks,
+                            MinionService minions, PearlDisableService pearlDisable) {
         int passiveDuration = tickIntervalTicks + 20;
 
-        registerIfEnabled(config, "sentry", () -> new SentryAbility(section(config, "sentry")));
-        registerIfEnabled(config, "vex", () -> new VexAbility(section(config, "vex")));
-        registerIfEnabled(config, "wild", () -> new WildAbility(section(config, "wild"), passiveDuration));
-        registerIfEnabled(config, "coast", () -> new CoastAbility(section(config, "coast"), passiveDuration));
+        registerIfEnabled(config, "sentry", () -> new SentryAbility(section(config, "sentry"), passiveDuration));
+        registerIfEnabled(config, "vex", () -> new VexAbility(section(config, "vex"), plugin::currentTick, plugin));
+        registerIfEnabled(config, "wild", () -> new WildAbility(section(config, "wild"), plugin::currentTick, plugin));
+        registerIfEnabled(config, "coast", () -> new CoastAbility(section(config, "coast")));
         registerIfEnabled(config, "dune", () -> new DuneAbility(section(config, "dune"), passiveDuration));
-        registerIfEnabled(config, "ward", () -> new WardAbility(section(config, "ward"), plugin::currentTick));
+        registerIfEnabled(config, "ward", () -> new WardAbility(section(config, "ward")));
         registerIfEnabled(config, "eye", () -> new EyeAbility(section(config, "eye"), passiveDuration));
-        registerIfEnabled(config, "tide", () -> new TideAbility(section(config, "tide"), passiveDuration));
-        registerIfEnabled(config, "snout", SnoutAbility::new);
-        registerIfEnabled(config, "rib", () -> new RibAbility(section(config, "rib")));
-        registerIfEnabled(config, "spire", () -> new SpireAbility(section(config, "spire"), passiveDuration));
-        registerIfEnabled(config, "wayfinder", () -> new WayfinderAbility(section(config, "wayfinder"), passiveDuration));
-        registerIfEnabled(config, "shaper", () -> new ShaperAbility(section(config, "shaper"), passiveDuration));
-        registerIfEnabled(config, "silence", () -> new SilenceAbility(section(config, "silence")));
-        registerIfEnabled(config, "raiser", () -> new RaiserAbility(section(config, "raiser")));
+        registerIfEnabled(config, "tide", () -> new TideAbility(section(config, "tide"), plugin));
+        registerIfEnabled(config, "snout", () -> new SnoutAbility(section(config, "snout"), minions, plugin::currentTick));
+        registerIfEnabled(config, "rib", () -> new RibAbility(section(config, "rib"), minions, plugin::currentTick));
+        registerIfEnabled(config, "spire", () -> new SpireAbility(section(config, "spire"), plugin));
+        registerIfEnabled(config, "wayfinder", () -> new WayfinderAbility(section(config, "wayfinder")));
+        registerIfEnabled(config, "shaper", () -> new ShaperAbility(section(config, "shaper"), plugin, passiveDuration));
+        registerIfEnabled(config, "silence", () -> new SilenceAbility(section(config, "silence"), plugin::currentTick, pearlDisable));
+        registerIfEnabled(config, "raiser", () -> new RaiserAbility(section(config, "raiser"), pearlDisable));
         registerIfEnabled(config, "host", () -> new HostAbility(section(config, "host")));
-        registerIfEnabled(config, "flow", () -> new FlowAbility(section(config, "flow")));
+        registerIfEnabled(config, "flow", () -> new FlowAbility(section(config, "flow"), plugin));
         registerIfEnabled(config, "bolt", () -> new BoltAbility(section(config, "bolt")));
     }
 
