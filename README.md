@@ -57,7 +57,8 @@ pattern in `config.yml` without recompiling.
 
 ## Building
 
-This is a standard Paper plugin (Maven, Java 21, targeting Paper API 1.21.x).
+This is a standard Paper plugin (Maven, Java 21, targeting Paper API
+1.21.11).
 
 ```
 mvn package
@@ -66,18 +67,16 @@ mvn package
 The built jar lands in `target/TrimSMP-1.0.0.jar` - drop it in your server's
 `plugins/` folder.
 
-**Note on this repository's dev container:** this particular sandboxed
-environment's network policy blocks `repo.papermc.io`, so `mvn package`
-cannot be verified to build *here*. The code was written and manually
-reviewed against the Paper/Bukkit API, but you should run the build once
-yourself (locally, in CI, or in an environment that can reach PaperMC's
-repository) before deploying. If `paper-api` fails to resolve because the
-pinned version in `pom.xml` (`<paper.api.version>`) has since been
-superseded, bump it to whatever the current Paper API snapshot/release is
-for your target Minecraft version.
+A GitHub Actions workflow (`.github/workflows/build.yml`) builds the jar on
+every push and uploads it as a downloadable build artifact, since this
+repository's own dev container blocks `repo.papermc.io` and can't run the
+build itself. If `paper-api` ever fails to resolve because the pinned
+version in `pom.xml` (`<paper.api.version>`) has been superseded, bump it to
+whatever the current Paper API snapshot/release is for your target
+Minecraft version.
 
 ## Requirements
 
 - Java 21+
-- Paper (or a Paper fork) 1.21.x - the plugin relies on Paper's `ArmorMeta`
+- Paper (or a Paper fork) 1.21.11 - the plugin relies on Paper's `ArmorMeta`
   trim API and Adventure text components, not just vanilla Bukkit/Spigot.
