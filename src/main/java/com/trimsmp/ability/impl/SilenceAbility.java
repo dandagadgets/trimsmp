@@ -8,6 +8,7 @@ import com.trimsmp.util.CooldownManager;
 import com.trimsmp.util.Effects;
 import com.trimsmp.util.PearlDisableService;
 import com.trimsmp.util.Targets;
+import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -61,6 +62,12 @@ public final class SilenceAbility implements TrimAbility {
         double radius = config.getDouble("radius", 15.0);
         int potionTicks = config.getInt("potion-duration-seconds", 20) * 20;
         long pearlDisableTicks = config.getInt("pearl-disable-seconds", 10) * 20L;
+
+        // The roar always empowers you, whether or not there's anyone around to hear it.
+        int selfBuffTicks = config.getInt("roar-self-buff-seconds", 8) * 20;
+        Effects.refresh(player, PotionEffectType.SPEED, 1, selfBuffTicks);
+        Effects.refresh(player, PotionEffectType.RESISTANCE, 1, selfBuffTicks);
+        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_WARDEN_ROAR, 1.5f, 0.8f);
 
         for (LivingEntity entity : Targets.nearbyLiving(player, radius, radius)) {
             Effects.refresh(entity, PotionEffectType.BLINDNESS, 0, potionTicks);

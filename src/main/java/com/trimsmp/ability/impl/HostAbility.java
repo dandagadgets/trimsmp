@@ -64,6 +64,11 @@ public final class HostAbility implements TrimAbility {
         double maxHealth = player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH).getValue();
         double stolenTotal = 0;
 
+        // A good host feeds themselves too, whether or not there are guests around to steal from.
+        int selfBuffTicks = config.getInt("self-buff-seconds", 8) * 20;
+        player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, selfBuffTicks, 1, true, false, true));
+        player.setFoodLevel(Math.min(20, player.getFoodLevel() + config.getInt("self-food-restore", 4)));
+
         for (LivingEntity nearby : Targets.nearbyLiving(player, radius, radius)) {
             for (PotionEffect effect : nearby.getActivePotionEffects()) {
                 if (POSITIVE_EFFECTS.contains(effect.getType())) {

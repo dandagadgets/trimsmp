@@ -107,6 +107,8 @@ public final class BoltAbility implements TrimAbility {
         List<LivingEntity> candidates = Targets.nearbyLiving(player, targetRange, targetRange);
         candidates.sort(Comparator.comparingDouble(e -> e.getLocation().distanceSquared(player.getLocation())));
         if (candidates.isEmpty()) {
+            // Nothing to chain to - still call down a cosmetic bolt in front of you.
+            player.getWorld().strikeLightningEffect(player.getLocation().add(player.getLocation().getDirection().multiply(3)));
             return;
         }
 

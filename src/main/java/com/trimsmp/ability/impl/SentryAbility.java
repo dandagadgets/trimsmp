@@ -56,14 +56,26 @@ public final class SentryAbility implements TrimAbility {
                 + config.getDouble("true-damage-per-tier", 0.4) * tier.level();
 
         List<LivingEntity> targets = Targets.nearbyHostiles(player, radius, arrowCount);
-        for (LivingEntity target : targets) {
-            Vector direction = target.getEyeLocation().toVector().subtract(player.getEyeLocation().toVector()).normalize();
-            Arrow arrow = player.launchProjectile(Arrow.class, direction);
-            arrow.setDamage(0.0);
-            arrow.setPickupStatus(AbstractArrow.PickupStatus.DISALLOWED);
+        if (!targets.isEmpty()) {
+            for (LivingEntity target : targets) {
+                Vector direction = target.getEyeLocation().toVector().subtract(player.getEyeLocation().toVector()).normalize();
+                Arrow arrow = player.launchProjectile(Arrow.class, direction);
+                arrow.setDamage(0.0);
+                arrow.setPickupStatus(AbstractArrow.PickupStatus.DISALLOWED);
 
-            double newHealth = Math.max(0.0, target.getHealth() - trueDamage);
-            target.setHealth(newHealth);
+                double newHealth = Math.max(0.0, target.getHealth() - trueDamage);
+                target.setHealth(newHealth);
+            }
+        } else {
+            // No hostiles nearby - fire a volley forward anyway so the ability is never a no-op.
+            Vector base = player.getEyeLocation().getDirection();
+            for (int i = 0; i < arrowCount; i++) {
+                Vector spread = base.clone().add(new Vector(
+                        (Math.random() - 0.5) * 0.3, (Math.random() - 0.5) * 0.2, (Math.random() - 0.5) * 0.3));
+                Arrow arrow = player.launchProjectile(Arrow.class, spread);
+                arrow.setDamage(0.0);
+                arrow.setPickupStatus(AbstractArrow.PickupStatus.DISALLOWED);
+            }
         }
     }
 }

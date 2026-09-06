@@ -7,6 +7,8 @@ import com.trimsmp.util.AbilityConfig;
 import com.trimsmp.util.Effects;
 import com.trimsmp.util.PearlDisableService;
 import com.trimsmp.util.Targets;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -53,6 +55,13 @@ public final class RaiserAbility implements TrimAbility {
         double radius = config.getDouble("entity-pull-radius", 15.0);
         int debuffTicks = config.getInt("debuff-duration-seconds", 4) * 20;
         long pearlDisableTicks = config.getInt("pearl-cooldown-seconds", 10) * 20L;
+
+        // The slam always rallies you, whether or not there's anyone nearby to pull in.
+        int selfBuffTicks = config.getInt("self-buff-seconds", 8) * 20;
+        Effects.refresh(player, PotionEffectType.STRENGTH, 1, selfBuffTicks);
+        Effects.refresh(player, PotionEffectType.SPEED, 1, selfBuffTicks);
+        player.getWorld().spawnParticle(Particle.EXPLOSION, player.getLocation(), 1);
+        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_RAVAGER_ROAR, 1.2f, 1.0f);
 
         for (LivingEntity nearby : Targets.nearbyLiving(player, radius, radius)) {
             Vector pull = player.getLocation().toVector().subtract(nearby.getLocation().toVector());
