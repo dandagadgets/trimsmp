@@ -41,13 +41,13 @@ public final class AbilityRegistry {
         registerIfEnabled(config, "sentry", () -> new SentryAbility(section(config, "sentry"), passiveDuration));
         registerIfEnabled(config, "vex", () -> new VexAbility(section(config, "vex"), plugin::currentTick, plugin));
         registerIfEnabled(config, "wild", () -> new WildAbility(section(config, "wild"), plugin::currentTick, plugin));
-        registerIfEnabled(config, "coast", () -> new CoastAbility(section(config, "coast")));
+        registerIfEnabled(config, "coast", () -> new CoastAbility(section(config, "coast"), plugin));
         registerIfEnabled(config, "dune", () -> new DuneAbility(section(config, "dune"), passiveDuration));
         registerIfEnabled(config, "ward", () -> new WardAbility(section(config, "ward")));
         registerIfEnabled(config, "eye", () -> new EyeAbility(section(config, "eye"), passiveDuration, minions, plugin::currentTick));
         registerIfEnabled(config, "tide", () -> new TideAbility(section(config, "tide"), plugin));
         registerIfEnabled(config, "snout", () -> new SnoutAbility(section(config, "snout"), minions, plugin::currentTick));
-        registerIfEnabled(config, "rib", () -> new RibAbility(section(config, "rib"), minions, plugin::currentTick));
+        registerIfEnabled(config, "rib", () -> new RibAbility(section(config, "rib"), minions, plugin::currentTick, plugin));
         registerIfEnabled(config, "spire", () -> new SpireAbility(section(config, "spire"), plugin));
         registerIfEnabled(config, "wayfinder", () -> new WayfinderAbility(section(config, "wayfinder"), plugin));
         registerIfEnabled(config, "shaper", () -> new ShaperAbility(section(config, "shaper"), passiveDuration));
@@ -55,7 +55,7 @@ public final class AbilityRegistry {
         registerIfEnabled(config, "raiser", () -> new RaiserAbility(section(config, "raiser"), pearlDisable));
         registerIfEnabled(config, "host", () -> new HostAbility(section(config, "host")));
         registerIfEnabled(config, "flow", () -> new FlowAbility(section(config, "flow"), plugin));
-        registerIfEnabled(config, "bolt", () -> new BoltAbility(section(config, "bolt")));
+        registerIfEnabled(config, "bolt", () -> new BoltAbility(section(config, "bolt"), plugin::currentTick));
     }
 
     private void registerIfEnabled(FileConfiguration config, String key, Supplier<TrimAbility> factory) {

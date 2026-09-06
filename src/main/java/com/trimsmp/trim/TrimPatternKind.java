@@ -10,13 +10,13 @@ public enum TrimPatternKind {
     SENTRY(TrimPattern.SENTRY, "sentry", "Sentry", "Fires spectral arrows at nearby foes, watching the perimeter."),
     VEX(TrimPattern.VEX, "vex", "Vex", "Debuffs nearby players, then vanishes when badly hurt."),
     WILD(TrimPattern.WILD, "wild", "Wild", "Grapples to blocks or enemies, and roots foes when you're low."),
-    COAST(TrimPattern.COAST, "coast", "Coast", "A burst of water drags enemies in and weakens them."),
+    COAST(TrimPattern.COAST, "coast", "Coast", "Summons a tsunami that batters everything nearby, then fades."),
     DUNE(TrimPattern.DUNE, "dune", "Dune", "Whips up a sandstorm that blinds and batters nearby foes."),
-    WARD(TrimPattern.WARD, "ward", "Ward", "Raises a personal barrier of absorption and resistance."),
+    WARD(TrimPattern.WARD, "ward", "Ward", "A guardian slam that damages foes, then shields you."),
     EYE(TrimPattern.EYE, "eye", "Eye", "Summons an allied Enderman to fight at your side."),
-    TIDE(TrimPattern.TIDE, "tide", "Tide", "Summons a moving wall of water that pushes enemies back."),
+    TIDE(TrimPattern.TIDE, "tide", "Tide", "Rides a tidal surge forward, smashing anything in the way."),
     SNOUT(TrimPattern.SNOUT, "snout", "Snout", "Summons Wither Skeletons to fight at your side."),
-    RIB(TrimPattern.RIB, "rib", "Rib", "Summons Bogged allies to fight at your side."),
+    RIB(TrimPattern.RIB, "rib", "Rib", "Summons Bogged allies and encases you in a bony shell."),
     SPIRE(TrimPattern.SPIRE, "spire", "Spire", "Dashes forward, smashing anything in the way."),
     WAYFINDER(TrimPattern.WAYFINDER, "wayfinder", "Wayfinder", "Lunges straight toward whoever you're looking at."),
     SHAPER(TrimPattern.SHAPER, "shaper", "Shaper", "Slams the ground, erupting stone spikes under nearby foes."),
@@ -24,7 +24,7 @@ public enum TrimPatternKind {
     RAISER(TrimPattern.RAISER, "raiser", "Raiser", "Slams the ground, pulling in and weakening nearby foes."),
     HOST(TrimPattern.HOST, "host", "Host", "Steals health and buffs from everyone nearby."),
     FLOW(TrimPattern.FLOW, "flow", "Flow", "Grants temporary flight, fueled by your own health."),
-    BOLT(TrimPattern.BOLT, "bolt", "Bolt", "Calls down lightning that chains between enemies.");
+    BOLT(TrimPattern.BOLT, "bolt", "Bolt", "Chain lightning, then charges your next 3 hits with lightning too.");
 
     private final TrimPattern bukkitPattern;
     private final String configKey;

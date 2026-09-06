@@ -5,19 +5,27 @@ import com.trimsmp.trim.TrimPatternKind;
 import com.trimsmp.trim.TrimTier;
 import com.trimsmp.util.AbilityConfig;
 import com.trimsmp.util.Effects;
-import com.trimsmp.util.Targets;
+import org.bukkit.Location;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.util.Vector;
+import org.bukkit.scheduler.BukkitRunnable;
 
-/** Coast: a burst of water pulls every nearby entity toward you, weakening and slowing them. */
+import java.util.UUID;
+
+/** Coast: permanent Dolphin's Grace; Tsunami - a huge wave spawns around you, damaging everything caught in it, then vanishes. */
 public final class CoastAbility implements TrimAbility {
 
     private final AbilityConfig config;
+    private final Plugin plugin;
 
-    public CoastAbility(AbilityConfig config) {
+    public CoastAbility(AbilityConfig config, Plugin plugin) {
         this.config = config;
+        this.plugin = plugin;
     }
 
     @Override
@@ -44,20 +52,36 @@ public final class CoastAbility implements TrimAbility {
 
     @Override
     public void activate(Player player, TrimTier tier) {
-        double radius = config.getDouble("radius", 30.0);
-        double damage = config.getDouble("damage-base", 10.0) + config.getDouble("damage-per-tier", 1.0) * tier.level();
+        double radius = config.getDouble("radius", 10.0) + config.getDouble("radius-per-tier", 1.0) * tier.level();
+        double damage = config.getDouble("damage-base", 6.0) + config.getDouble("damage-per-tier", 1.0) * tier.level();
         int debuffTicks = config.getInt("debuff-duration-seconds", 4) * 20;
+        int pulseCount = config.getInt("pulse-count", 3);
+        int pulseIntervalTicks = config.getInt("pulse-interval-ticks", 8);
 
-        for (LivingEntity nearby : Targets.nearbyLiving(player, radius, radius)) {
-            Vector pull = player.getLocation().toVector().subtract(nearby.getLocation().toVector());
-            if (pull.lengthSquared() > 0.01) {
-                pull.normalize().multiply(1.4);
-                pull.setY(Math.max(0.25, pull.getY()));
-                nearby.setVelocity(nearby.getVelocity().add(pull));
+        Location origin = player.getLocation();
+        UUID casterId = player.getUniqueId();
+
+        new BukkitRunnable() {
+            int pulsesRun = 0;
+
+            @Override
+            public void run() {
+                if (pulsesRun++ >= pulseCount) {
+                    cancel();
+                    return;
+                }
+                origin.getWorld().spawnParticle(Particle.SPLASH, origin, 80, radius / 2, 1.0, radius / 2, 0.1);
+                origin.getWorld().playSound(origin, Sound.ENTITY_GENERIC_SPLASH, 2.0f, 0.6f);
+
+                for (Entity entity : origin.getWorld().getNearbyEntities(origin, radius, radius, radius)) {
+                    if (entity.getUniqueId().equals(casterId) || !(entity instanceof LivingEntity nearby)) {
+                        continue;
+                    }
+                    nearby.damage(damage, player);
+                    Effects.refresh(nearby, PotionEffectType.WEAKNESS, 1, debuffTicks);
+                    Effects.refresh(nearby, PotionEffectType.SLOWNESS, 1, debuffTicks);
+                }
             }
-            nearby.damage(damage, player);
-            Effects.refresh(nearby, PotionEffectType.WEAKNESS, 1, debuffTicks);
-            Effects.refresh(nearby, PotionEffectType.SLOWNESS, 1, debuffTicks);
-        }
+        }.runTaskTimer(plugin, 0L, pulseIntervalTicks);
     }
 }

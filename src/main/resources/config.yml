@@ -59,10 +59,13 @@ abilities:
 
   coast:
     enabled: true
-    radius: 30.0
-    damage-base: 10.0
+    radius: 10.0
+    radius-per-tier: 1.0
+    damage-base: 6.0
     damage-per-tier: 1.0
     debuff-duration-seconds: 4
+    pulse-count: 3
+    pulse-interval-ticks: 8
     cooldown-seconds-base: 60
     cooldown-seconds-reduction-per-tier: 6
 
@@ -77,11 +80,14 @@ abilities:
 
   ward:
     enabled: true
-    barrier-duration-seconds: 10
-    absorption-amplifier: 3
-    resistance-amplifier: 1
-    cooldown-seconds-base: 120
-    cooldown-seconds-reduction-per-tier: 12
+    radius: 6.0
+    damage-base: 5.0
+    damage-per-tier: 0.7
+    knockback-strength: 1.4
+    resistance-duration-seconds: 6
+    resistance-amplifier: 2
+    cooldown-seconds-base: 45
+    cooldown-seconds-reduction-per-tier: 5
 
   eye:
     enabled: true
@@ -92,14 +98,13 @@ abilities:
 
   tide:
     enabled: true
-    wave-width: 3.0
-    wall-height: 6.0
-    effect-duration-seconds: 15
-    knockback-strength: 1.8
-    move-delay-ticks: 2
-    max-moves: 20
-    cooldown-seconds-base: 120
-    cooldown-seconds-reduction-per-tier: 12
+    surge-speed: 1.8
+    surge-speed-per-tier: 0.1
+    damage-base: 4.0
+    damage-per-tier: 0.6
+    knockback-strength: 1.4
+    cooldown-seconds-base: 45
+    cooldown-seconds-reduction-per-tier: 4
 
   snout:
     enabled: true
@@ -112,6 +117,7 @@ abilities:
     enabled: true
     minion-count-base: 2
     minion-lifespan-seconds: 60
+    shell-duration-seconds: 6
     cooldown-seconds-base: 60
     cooldown-seconds-reduction-per-tier: 6
 
@@ -191,5 +197,9 @@ abilities:
     subsequent-damage-base: 4.0
     subsequent-damage-per-tier: 0.4
     weakness-duration-seconds: 5
+    charged-hits: 3
+    charged-hits-duration-seconds: 20
+    charged-hit-damage-base: 2.0
+    charged-hit-damage-per-tier: 0.3
     cooldown-seconds-base: 20
     cooldown-seconds-reduction-per-tier: 2

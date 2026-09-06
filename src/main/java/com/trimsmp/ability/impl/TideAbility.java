@@ -5,9 +5,8 @@ import com.trimsmp.trim.TrimPatternKind;
 import com.trimsmp.trim.TrimTier;
 import com.trimsmp.util.AbilityConfig;
 import com.trimsmp.util.Effects;
-import org.bukkit.Location;
+import com.trimsmp.util.Targets;
 import org.bukkit.Particle;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -15,7 +14,11 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-/** Tide: a wall of water surges forward, pushing back and slowing everything caught in it. */
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
+/** Tide: Dolphin's Grace III; Tidal Surge - ride a current forward, damaging and knocking aside anything in your path. */
 public final class TideAbility implements TrimAbility {
 
     private final AbilityConfig config;
@@ -43,46 +46,47 @@ public final class TideAbility implements TrimAbility {
 
     @Override
     public long activationCooldownTicks(TrimTier tier) {
-        int base = config.getInt("cooldown-seconds-base", 120);
-        int reductionPerTier = config.getInt("cooldown-seconds-reduction-per-tier", 12);
-        return Math.max(10, base - reductionPerTier * (tier.level() - 1)) * 20L;
+        int base = config.getInt("cooldown-seconds-base", 45);
+        int reductionPerTier = config.getInt("cooldown-seconds-reduction-per-tier", 4);
+        return Math.max(5, base - reductionPerTier * (tier.level() - 1)) * 20L;
     }
 
     @Override
     public void activate(Player player, TrimTier tier) {
-        double waveWidth = config.getDouble("wave-width", 3.0);
-        double wallHeight = config.getDouble("wall-height", 6.0);
-        int effectTicks = config.getInt("effect-duration-seconds", 15) * 20;
-        double knockback = config.getDouble("knockback-strength", 1.8);
-        int moveDelay = config.getInt("move-delay-ticks", 2);
-        int maxMoves = config.getInt("max-moves", 20);
+        double surgeSpeed = config.getDouble("surge-speed", 1.8) + config.getDouble("surge-speed-per-tier", 0.1) * tier.level();
+        double damage = config.getDouble("damage-base", 4.0) + config.getDouble("damage-per-tier", 0.6) * tier.level();
+        double knockback = config.getDouble("knockback-strength", 1.4);
 
-        Vector direction = player.getLocation().getDirection().setY(0).normalize();
-        Location origin = player.getLocation();
+        Vector direction = player.getLocation().getDirection().normalize();
+        Vector velocity = direction.clone().multiply(surgeSpeed);
+        velocity.setY(Math.max(0.2, velocity.getY()));
+        player.setVelocity(velocity);
 
+        Set<UUID> alreadyHit = new HashSet<>();
         new BukkitRunnable() {
-            int moves = 0;
+            int ticksRun = 0;
 
             @Override
             public void run() {
-                if (!player.isOnline() || moves >= maxMoves) {
+                if (!player.isOnline() || ticksRun++ > 12) {
                     cancel();
                     return;
                 }
-                moves++;
-                Location point = origin.clone().add(direction.clone().multiply(moves * 1.5));
-                point.getWorld().spawnParticle(Particle.SPLASH, point, 25,
-                        waveWidth / 2, wallHeight / 2, waveWidth / 2, 0.05);
+                player.getWorld().spawnParticle(Particle.SPLASH, player.getLocation(), 15, 0.4, 0.4, 0.4, 0.05);
 
-                for (Entity entity : point.getWorld().getNearbyEntities(point, waveWidth, wallHeight, waveWidth)) {
-                    if (entity instanceof LivingEntity living && !entity.equals(player)) {
-                        Vector push = direction.clone().multiply(knockback);
+                for (LivingEntity nearby : Targets.nearbyLiving(player, 2.0, 2.0)) {
+                    if (!alreadyHit.add(nearby.getUniqueId())) {
+                        continue;
+                    }
+                    nearby.damage(damage, player);
+                    Vector push = nearby.getLocation().toVector().subtract(player.getLocation().toVector());
+                    if (push.lengthSquared() > 0.01) {
+                        push.normalize().multiply(knockback);
                         push.setY(Math.max(0.3, push.getY()));
-                        living.setVelocity(living.getVelocity().add(push));
-                        Effects.refresh(living, PotionEffectType.SLOWNESS, 1, effectTicks);
+                        nearby.setVelocity(nearby.getVelocity().add(push));
                     }
                 }
             }
-        }.runTaskTimer(plugin, 0L, moveDelay);
+        }.runTaskTimer(plugin, 0L, 1L);
     }
 }

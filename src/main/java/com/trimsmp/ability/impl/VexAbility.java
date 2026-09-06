@@ -58,13 +58,7 @@ public final class VexAbility implements TrimAbility {
         int debuffTicks = config.getInt("debuff-duration-seconds", 20) * 20;
         int blindTicks = config.getInt("blindness-duration-seconds", 5) * 20;
 
-        for (Player enemy : Bukkit.getOnlinePlayers()) {
-            if (enemy.equals(player) || enemy.getWorld() != player.getWorld()) {
-                continue;
-            }
-            if (enemy.getLocation().distanceSquared(player.getLocation()) > radius * radius) {
-                continue;
-            }
+        for (var enemy : Targets.nearbyLiving(player, radius, radius)) {
             enemy.damage(damage, player);
             Effects.refresh(enemy, PotionEffectType.SLOWNESS, 1, debuffTicks);
             Effects.refresh(enemy, PotionEffectType.WEAKNESS, 1, debuffTicks);

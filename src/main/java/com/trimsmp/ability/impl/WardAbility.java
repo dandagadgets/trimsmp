@@ -5,10 +5,15 @@ import com.trimsmp.trim.TrimPatternKind;
 import com.trimsmp.trim.TrimTier;
 import com.trimsmp.util.AbilityConfig;
 import com.trimsmp.util.Effects;
+import com.trimsmp.util.Targets;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 
-/** Ward: a personal barrier of Absorption, Resistance, and Fire Resistance on demand. */
+/** Ward: Guardian Slam - a shockwave that damages and knocks back nearby enemies, then shields you. */
 public final class WardAbility implements TrimAbility {
 
     private final AbilityConfig config;
@@ -34,19 +39,32 @@ public final class WardAbility implements TrimAbility {
 
     @Override
     public long activationCooldownTicks(TrimTier tier) {
-        int base = config.getInt("cooldown-seconds-base", 120);
-        int reductionPerTier = config.getInt("cooldown-seconds-reduction-per-tier", 12);
-        return Math.max(10, base - reductionPerTier * (tier.level() - 1)) * 20L;
+        int base = config.getInt("cooldown-seconds-base", 45);
+        int reductionPerTier = config.getInt("cooldown-seconds-reduction-per-tier", 5);
+        return Math.max(5, base - reductionPerTier * (tier.level() - 1)) * 20L;
     }
 
     @Override
     public void activate(Player player, TrimTier tier) {
-        int barrierTicks = config.getInt("barrier-duration-seconds", 10) * 20;
-        int absorptionAmplifier = config.getInt("absorption-amplifier", 3) + (tier.level() - 1) / 2;
-        int resistanceAmplifier = config.getInt("resistance-amplifier", 1) + (tier.level() - 1) / 3;
+        double radius = config.getDouble("radius", 6.0);
+        double damage = config.getDouble("damage-base", 5.0) + config.getDouble("damage-per-tier", 0.7) * tier.level();
+        double knockback = config.getDouble("knockback-strength", 1.4);
+        int resistTicks = config.getInt("resistance-duration-seconds", 6) * 20;
+        int resistAmplifier = config.getInt("resistance-amplifier", 2) + (tier.level() - 1) / 3;
 
-        Effects.refresh(player, PotionEffectType.ABSORPTION, absorptionAmplifier, barrierTicks);
-        Effects.refresh(player, PotionEffectType.RESISTANCE, resistanceAmplifier, barrierTicks);
-        Effects.refresh(player, PotionEffectType.FIRE_RESISTANCE, 0, barrierTicks);
+        player.getWorld().spawnParticle(Particle.EXPLOSION, player.getLocation(), 1);
+        player.getWorld().playSound(player.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1.5f, 0.8f);
+
+        for (LivingEntity nearby : Targets.nearbyLiving(player, radius, radius)) {
+            nearby.damage(damage, player);
+            Vector push = nearby.getLocation().toVector().subtract(player.getLocation().toVector());
+            if (push.lengthSquared() > 0.01) {
+                push.normalize().multiply(knockback);
+                push.setY(Math.max(0.4, push.getY()));
+                nearby.setVelocity(nearby.getVelocity().add(push));
+            }
+        }
+
+        Effects.refresh(player, PotionEffectType.RESISTANCE, resistAmplifier, resistTicks);
     }
 }
