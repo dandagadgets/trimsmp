@@ -38,6 +38,8 @@ abilities:
     damage-per-tier: 1.0
     debuff-duration-seconds: 20
     blindness-duration-seconds: 5
+    minion-count-base: 3
+    minion-lifespan-seconds: 45
     cooldown-seconds-base: 120
     cooldown-seconds-reduction-per-tier: 12
     disrupt-health-threshold: 8.0

@@ -1,6 +1,7 @@
 package com.trimsmp.ability.impl;
 
 import com.trimsmp.ability.TrimAbility;
+import com.trimsmp.minion.MinionService;
 import com.trimsmp.trim.TrimPatternKind;
 import com.trimsmp.trim.TrimTier;
 import com.trimsmp.util.AbilityConfig;
@@ -8,6 +9,7 @@ import com.trimsmp.util.CooldownManager;
 import com.trimsmp.util.Effects;
 import com.trimsmp.util.Targets;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.plugin.Plugin;
@@ -15,18 +17,20 @@ import org.bukkit.potion.PotionEffectType;
 
 import java.util.function.LongSupplier;
 
-/** Vex: briefly debuffs nearby players; when badly hurt, vanishes into True Invisibility. */
+/** Vex: debuffs nearby enemies and summons 3 allied Vexes; when badly hurt, vanishes into True Invisibility. */
 public final class VexAbility implements TrimAbility {
 
     private final AbilityConfig config;
     private final LongSupplier currentTick;
     private final Plugin plugin;
+    private final MinionService minions;
     private final CooldownManager disruptCooldown = new CooldownManager();
 
-    public VexAbility(AbilityConfig config, LongSupplier currentTick, Plugin plugin) {
+    public VexAbility(AbilityConfig config, LongSupplier currentTick, Plugin plugin, MinionService minions) {
         this.config = config;
         this.currentTick = currentTick;
         this.plugin = plugin;
+        this.minions = minions;
     }
 
     @Override
@@ -64,6 +68,10 @@ public final class VexAbility implements TrimAbility {
             Effects.refresh(enemy, PotionEffectType.WEAKNESS, 1, debuffTicks);
             Effects.refresh(enemy, PotionEffectType.BLINDNESS, 0, blindTicks);
         }
+
+        int minionCount = config.getInt("minion-count-base", 3);
+        long lifespanTicks = config.getInt("minion-lifespan-seconds", 45) * 20L;
+        minions.spawn(player, EntityType.VEX, minionCount, lifespanTicks, currentTick.getAsLong());
     }
 
     @Override

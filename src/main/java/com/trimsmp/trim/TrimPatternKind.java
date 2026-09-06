@@ -8,7 +8,7 @@ import org.bukkit.inventory.meta.trim.TrimPattern;
  */
 public enum TrimPatternKind {
     SENTRY(TrimPattern.SENTRY, "sentry", "Sentry", "Fires spectral arrows at nearby foes, watching the perimeter."),
-    VEX(TrimPattern.VEX, "vex", "Vex", "Debuffs nearby players, then vanishes when badly hurt."),
+    VEX(TrimPattern.VEX, "vex", "Vex", "Debuffs nearby foes, summons 3 allied Vexes, then vanishes when badly hurt."),
     WILD(TrimPattern.WILD, "wild", "Wild", "Grapples to blocks or enemies, and roots foes when you're low."),
     COAST(TrimPattern.COAST, "coast", "Coast", "Summons a tsunami that batters everything nearby, then fades."),
     DUNE(TrimPattern.DUNE, "dune", "Dune", "Whips up a sandstorm that blinds and batters nearby foes."),

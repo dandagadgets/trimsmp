@@ -39,7 +39,7 @@ public final class AbilityRegistry {
         int passiveDuration = tickIntervalTicks + 20;
 
         registerIfEnabled(config, "sentry", () -> new SentryAbility(section(config, "sentry"), passiveDuration));
-        registerIfEnabled(config, "vex", () -> new VexAbility(section(config, "vex"), plugin::currentTick, plugin));
+        registerIfEnabled(config, "vex", () -> new VexAbility(section(config, "vex"), plugin::currentTick, plugin, minions));
         registerIfEnabled(config, "wild", () -> new WildAbility(section(config, "wild"), plugin::currentTick, plugin));
         registerIfEnabled(config, "coast", () -> new CoastAbility(section(config, "coast"), plugin));
         registerIfEnabled(config, "dune", () -> new DuneAbility(section(config, "dune"), passiveDuration));
