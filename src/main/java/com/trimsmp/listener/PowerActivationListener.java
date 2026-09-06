@@ -3,6 +3,8 @@ package com.trimsmp.listener;
 import com.trimsmp.TrimSmpPlugin;
 import com.trimsmp.ability.TrimAbility;
 import com.trimsmp.trim.ActiveTrimSet;
+import com.trimsmp.util.Msg;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -36,14 +38,25 @@ public final class PowerActivationListener implements Listener {
             return;
         }
 
+        event.setCancelled(true);
+        String cooldownKey = set.pattern().configKey();
+        long currentTick = plugin.currentTick();
+
+        long remaining = plugin.activationCooldowns().remainingTicks(player, cooldownKey, currentTick);
+        if (remaining > 0) {
+            long seconds = (remaining + 19) / 20;
+            Msg.actionBar(player, "&7" + set.pattern().displayName() + " on cooldown - &f" + seconds + "s");
+            return;
+        }
+
         long cooldownTicks = ability.activationCooldownTicks(set.tier());
-        boolean ready = plugin.activationCooldowns()
-                .tryUse(player, set.pattern().configKey(), plugin.currentTick(), cooldownTicks);
+        boolean ready = plugin.activationCooldowns().tryUse(player, cooldownKey, currentTick, cooldownTicks);
         if (!ready) {
             return;
         }
 
-        event.setCancelled(true);
         ability.activate(player, set.tier());
+        Msg.actionBar(player, "&d✦ " + set.pattern().displayName() + " activated!");
+        player.playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 0.6f, 1.4f);
     }
 }

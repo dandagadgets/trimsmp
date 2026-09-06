@@ -7,24 +7,24 @@ import org.bukkit.inventory.meta.trim.TrimPattern;
  * a stable config key, a display name, and a theme blurb shown in /trimsmp info.
  */
 public enum TrimPatternKind {
-    SENTRY(TrimPattern.SENTRY, "sentry", "Sentry", "Watches the perimeter for threats."),
-    VEX(TrimPattern.VEX, "vex", "Vex", "Blinks through the world like a vexing spirit."),
-    WILD(TrimPattern.WILD, "wild", "Wild", "Draws vigor from untamed nature."),
-    COAST(TrimPattern.COAST, "coast", "Coast", "Moves through water like the tide itself."),
-    DUNE(TrimPattern.DUNE, "dune", "Dune", "Endures heat and shapes the desert sands."),
-    WARD(TrimPattern.WARD, "ward", "Ward", "Wards off death with a lingering shield."),
-    EYE(TrimPattern.EYE, "eye", "Eye", "Sees all, and all that see it look away."),
-    TIDE(TrimPattern.TIDE, "tide", "Tide", "Carries the ocean's current wherever it goes."),
-    SNOUT(TrimPattern.SNOUT, "snout", "Snout", "Bartered peace with the creatures of the nether."),
-    RIB(TrimPattern.RIB, "rib", "Rib", "Strikes fear into the bones of the undead."),
-    SPIRE(TrimPattern.SPIRE, "spire", "Spire", "Falls from great heights without consequence."),
-    WAYFINDER(TrimPattern.WAYFINDER, "wayfinder", "Wayfinder", "Always knows the way home."),
-    SHAPER(TrimPattern.SHAPER, "shaper", "Shaper", "Shapes stone and ore with practiced ease."),
-    SILENCE(TrimPattern.SILENCE, "silence", "Silence", "Moves through the world unnoticed."),
-    RAISER(TrimPattern.RAISER, "raiser", "Raiser", "Rallies allies to greater heights in battle."),
-    HOST(TrimPattern.HOST, "host", "Host", "A welcome guest wherever villagers gather."),
-    FLOW(TrimPattern.FLOW, "flow", "Flow", "Rides a gust of wind across the battlefield."),
-    BOLT(TrimPattern.BOLT, "bolt", "Bolt", "Strikes like lightning in the heat of combat.");
+    SENTRY(TrimPattern.SENTRY, "sentry", "Sentry", "Fires spectral arrows at nearby foes, watching the perimeter."),
+    VEX(TrimPattern.VEX, "vex", "Vex", "Debuffs nearby players, then vanishes when badly hurt."),
+    WILD(TrimPattern.WILD, "wild", "Wild", "Grapples to blocks or enemies, and roots foes when you're low."),
+    COAST(TrimPattern.COAST, "coast", "Coast", "A burst of water drags enemies in and weakens them."),
+    DUNE(TrimPattern.DUNE, "dune", "Dune", "Whips up a sandstorm that blinds and batters nearby foes."),
+    WARD(TrimPattern.WARD, "ward", "Ward", "Raises a personal barrier of absorption and resistance."),
+    EYE(TrimPattern.EYE, "eye", "Eye", "Reveals every nearby creature, even the hidden ones."),
+    TIDE(TrimPattern.TIDE, "tide", "Tide", "Summons a moving wall of water that pushes enemies back."),
+    SNOUT(TrimPattern.SNOUT, "snout", "Snout", "Summons Wither Skeletons to fight at your side."),
+    RIB(TrimPattern.RIB, "rib", "Rib", "Summons Bogged allies to fight at your side."),
+    SPIRE(TrimPattern.SPIRE, "spire", "Spire", "Dashes forward, smashing anything in the way."),
+    WAYFINDER(TrimPattern.WAYFINDER, "wayfinder", "Wayfinder", "Marks a spot, then teleports you back to it."),
+    SHAPER(TrimPattern.SHAPER, "shaper", "Shaper", "Conjures a temporary bridge across any gap."),
+    SILENCE(TrimPattern.SILENCE, "silence", "Silence", "Blinds enemies and disables their pearls; echoes back when hurt."),
+    RAISER(TrimPattern.RAISER, "raiser", "Raiser", "Slams the ground, pulling in and weakening nearby foes."),
+    HOST(TrimPattern.HOST, "host", "Host", "Steals health and buffs from everyone nearby."),
+    FLOW(TrimPattern.FLOW, "flow", "Flow", "Grants temporary flight, fueled by your own health."),
+    BOLT(TrimPattern.BOLT, "bolt", "Bolt", "Calls down lightning that chains between enemies.");
 
     private final TrimPattern bukkitPattern;
     private final String configKey;

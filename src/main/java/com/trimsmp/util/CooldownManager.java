@@ -25,6 +25,16 @@ public final class CooldownManager {
         return true;
     }
 
+    /** Ticks remaining before this key is ready again, or 0 if it's already ready. */
+    public long remainingTicks(Player player, String key, long currentTick) {
+        Map<String, Long> perPlayer = readyAtTick.get(player.getUniqueId());
+        if (perPlayer == null) {
+            return 0L;
+        }
+        long readyAt = perPlayer.getOrDefault(key, 0L);
+        return Math.max(0L, readyAt - currentTick);
+    }
+
     public void forget(Player player) {
         readyAtTick.remove(player.getUniqueId());
     }
