@@ -1,9 +1,11 @@
 package com.trimsmp.util;
 
+import org.bukkit.FluidCollisionMode;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
+import org.bukkit.util.RayTraceResult;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -13,6 +15,16 @@ import java.util.List;
 public final class Targets {
 
     private Targets() {
+    }
+
+    /** The living entity the player is directly looking at within range, or null if none (line of sight, blocks included). */
+    public static LivingEntity lookingAt(Player player, double range) {
+        RayTraceResult result = player.getWorld().rayTrace(player.getEyeLocation(), player.getEyeLocation().getDirection(),
+                range, FluidCollisionMode.NEVER, true, 0.3, entity -> !entity.equals(player));
+        if (result != null && result.getHitEntity() instanceof LivingEntity living) {
+            return living;
+        }
+        return null;
     }
 
     public static List<LivingEntity> nearbyHostiles(Player player, double radius, int limit) {

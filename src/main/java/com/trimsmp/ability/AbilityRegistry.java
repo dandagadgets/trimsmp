@@ -44,13 +44,13 @@ public final class AbilityRegistry {
         registerIfEnabled(config, "coast", () -> new CoastAbility(section(config, "coast")));
         registerIfEnabled(config, "dune", () -> new DuneAbility(section(config, "dune"), passiveDuration));
         registerIfEnabled(config, "ward", () -> new WardAbility(section(config, "ward")));
-        registerIfEnabled(config, "eye", () -> new EyeAbility(section(config, "eye"), passiveDuration));
+        registerIfEnabled(config, "eye", () -> new EyeAbility(section(config, "eye"), passiveDuration, minions, plugin::currentTick));
         registerIfEnabled(config, "tide", () -> new TideAbility(section(config, "tide"), plugin));
         registerIfEnabled(config, "snout", () -> new SnoutAbility(section(config, "snout"), minions, plugin::currentTick));
         registerIfEnabled(config, "rib", () -> new RibAbility(section(config, "rib"), minions, plugin::currentTick));
         registerIfEnabled(config, "spire", () -> new SpireAbility(section(config, "spire"), plugin));
-        registerIfEnabled(config, "wayfinder", () -> new WayfinderAbility(section(config, "wayfinder")));
-        registerIfEnabled(config, "shaper", () -> new ShaperAbility(section(config, "shaper"), plugin, passiveDuration));
+        registerIfEnabled(config, "wayfinder", () -> new WayfinderAbility(section(config, "wayfinder"), plugin));
+        registerIfEnabled(config, "shaper", () -> new ShaperAbility(section(config, "shaper"), passiveDuration));
         registerIfEnabled(config, "silence", () -> new SilenceAbility(section(config, "silence"), plugin::currentTick, pearlDisable));
         registerIfEnabled(config, "raiser", () -> new RaiserAbility(section(config, "raiser"), pearlDisable));
         registerIfEnabled(config, "host", () -> new HostAbility(section(config, "host")));

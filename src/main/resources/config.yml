@@ -85,11 +85,10 @@ abilities:
 
   eye:
     enabled: true
-    true-sight-radius: 80.0
-    true-sight-vertical-radius: 50.0
-    true-sight-duration-seconds: 30
-    cooldown-seconds-base: 120
-    cooldown-seconds-reduction-per-tier: 12
+    minion-count-base: 1
+    minion-lifespan-seconds: 60
+    cooldown-seconds-base: 90
+    cooldown-seconds-reduction-per-tier: 9
 
   tide:
     enabled: true
@@ -127,16 +126,20 @@ abilities:
 
   wayfinder:
     enabled: true
-    cooldown-seconds-base: 120
-    cooldown-seconds-reduction-per-tier: 12
+    lunge-range: 20.0
+    lunge-speed: 1.6
+    lunge-speed-per-tier: 0.1
+    cooldown-seconds-base: 25
+    cooldown-seconds-reduction-per-tier: 2
 
   shaper:
     enabled: true
     haste-amplifier-per-tier: 1
-    bridge-length-base: 5
-    bridge-duration-seconds: 8
-    cooldown-seconds-base: 45
-    cooldown-seconds-reduction-per-tier: 5
+    radius: 6.0
+    damage-base: 5.0
+    damage-per-tier: 0.7
+    cooldown-seconds-base: 30
+    cooldown-seconds-reduction-per-tier: 3
 
   silence:
     enabled: true
@@ -172,6 +175,9 @@ abilities:
     duration-seconds: 20
     heart-cost-interval-seconds: 1
     heart-cost-amount: 2.0
+    burst-radius: 5.0
+    burst-damage-base: 3.0
+    burst-damage-per-tier: 0.5
     cooldown-seconds-base: 60
     cooldown-seconds-reduction-per-tier: 6
 

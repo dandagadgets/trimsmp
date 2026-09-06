@@ -5,10 +5,13 @@ import com.trimsmp.trim.TrimPatternKind;
 import com.trimsmp.trim.TrimTier;
 import com.trimsmp.util.AbilityConfig;
 import com.trimsmp.util.Effects;
+import com.trimsmp.util.Targets;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 /** Flow: grants temporary flight propelled by wind, at the cost of your own health each second. */
 public final class FlowAbility implements TrimAbility {
@@ -48,8 +51,20 @@ public final class FlowAbility implements TrimAbility {
         int durationTicks = (config.getInt("duration-seconds", 20) + tier.level() * 2) * 20;
         int costIntervalTicks = config.getInt("heart-cost-interval-seconds", 1) * 20;
         double costAmount = config.getDouble("heart-cost-amount", 2.0);
-        boolean previousAllowFlight = player.getAllowFlight();
+        double burstRadius = config.getDouble("burst-radius", 5.0);
+        double burstDamage = config.getDouble("burst-damage-base", 3.0) + config.getDouble("burst-damage-per-tier", 0.5) * tier.level();
 
+        for (LivingEntity nearby : Targets.nearbyLiving(player, burstRadius, burstRadius)) {
+            nearby.damage(burstDamage, player);
+            Vector knockback = nearby.getLocation().toVector().subtract(player.getLocation().toVector());
+            if (knockback.lengthSquared() > 0.01) {
+                knockback.normalize().multiply(1.4);
+                knockback.setY(Math.max(0.4, knockback.getY()));
+                nearby.setVelocity(nearby.getVelocity().add(knockback));
+            }
+        }
+
+        boolean previousAllowFlight = player.getAllowFlight();
         player.setAllowFlight(true);
         player.setFlying(true);
 
