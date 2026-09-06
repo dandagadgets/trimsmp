@@ -8,6 +8,9 @@ import com.trimsmp.util.CooldownManager;
 import com.trimsmp.util.Effects;
 import com.trimsmp.util.Targets;
 import org.bukkit.FluidCollisionMode;
+import org.bukkit.Location;
+import org.bukkit.Particle;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -71,6 +74,7 @@ public final class WildAbility implements TrimAbility {
 
         if (result != null && result.getHitEntity() instanceof LivingEntity target) {
             Effects.refresh(target, PotionEffectType.POISON, 0, poisonTicks);
+            growGrassPatch(target.getLocation().clone(), player, tier);
         }
 
         new BukkitRunnable() {
@@ -90,6 +94,35 @@ public final class WildAbility implements TrimAbility {
                 player.setVelocity(toTarget.normalize().multiply(speed));
             }
         }.runTaskTimer(plugin, 0L, 1L);
+    }
+
+    private void growGrassPatch(Location patchLocation, Player player, TrimTier tier) {
+        double patchRadius = config.getDouble("grass-patch-radius", 2.5);
+        double patchDamage = config.getDouble("grass-patch-damage-base", 1.0) + config.getDouble("grass-patch-damage-per-tier", 0.2) * tier.level();
+        int patchDurationTicks = config.getInt("grass-patch-duration-seconds", 4) * 20;
+        int tickInterval = config.getInt("grass-patch-tick-interval", 10);
+
+        new BukkitRunnable() {
+            int elapsedTicks = 0;
+
+            @Override
+            public void run() {
+                if (elapsedTicks >= patchDurationTicks) {
+                    cancel();
+                    return;
+                }
+                elapsedTicks += tickInterval;
+
+                patchLocation.getWorld().spawnParticle(Particle.CRIT, patchLocation, 20,
+                        patchRadius / 2, 0.3, patchRadius / 2, 0.05);
+
+                for (Entity entity : patchLocation.getWorld().getNearbyEntities(patchLocation, patchRadius, 1.5, patchRadius)) {
+                    if (entity instanceof LivingEntity living) {
+                        living.damage(patchDamage, player);
+                    }
+                }
+            }
+        }.runTaskTimer(plugin, 0L, tickInterval);
     }
 
     @Override

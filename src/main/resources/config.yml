@@ -51,6 +51,11 @@ abilities:
     grapple-range: 60.0
     grapple-speed: 1.8
     poison-duration-seconds: 10
+    grass-patch-radius: 2.5
+    grass-patch-damage-base: 1.0
+    grass-patch-damage-per-tier: 0.2
+    grass-patch-duration-seconds: 4
+    grass-patch-tick-interval: 10
     cooldown-seconds-base: 20
     cooldown-seconds-reduction-per-tier: 2
     root-trigger-health: 8.0
