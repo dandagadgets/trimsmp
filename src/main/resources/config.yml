@@ -66,13 +66,13 @@ abilities:
 
   coast:
     enabled: true
-    radius: 10.0
-    radius-per-tier: 1.0
+    radius: 8.0
+    radius-per-tier: 0.5
     damage-base: 6.0
     damage-per-tier: 1.0
     debuff-duration-seconds: 4
-    pulse-count: 3
-    pulse-interval-ticks: 8
+    flood-duration-seconds: 4
+    pulse-count: 4
     cooldown-seconds-base: 60
     cooldown-seconds-reduction-per-tier: 6
 

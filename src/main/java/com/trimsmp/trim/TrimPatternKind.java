@@ -10,7 +10,7 @@ public enum TrimPatternKind {
     SENTRY(TrimPattern.SENTRY, "sentry", "Sentry", "Fires spectral arrows at nearby foes, watching the perimeter."),
     VEX(TrimPattern.VEX, "vex", "Vex", "Debuffs nearby foes, summons 3 allied Vexes, then vanishes when badly hurt."),
     WILD(TrimPattern.WILD, "wild", "Wild", "Grapples to blocks or enemies, growing damaging grass on impact; roots foes when you're low."),
-    COAST(TrimPattern.COAST, "coast", "Coast", "Summons a tsunami that batters everything nearby, then fades."),
+    COAST(TrimPattern.COAST, "coast", "Coast", "Floods the area in a real tsunami that batters everything nearby, then drains away."),
     DUNE(TrimPattern.DUNE, "dune", "Dune", "Whips up a sandstorm that blinds and batters nearby foes."),
     WARD(TrimPattern.WARD, "ward", "Ward", "A guardian slam that damages foes, then shields you."),
     EYE(TrimPattern.EYE, "eye", "Eye", "Summons an allied Enderman to fight at your side."),
